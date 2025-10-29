@@ -1,0 +1,160 @@
+/* === SPACE TYPING GAME THEME === */
+
+/* Global Colors */
+:root {
+  --color-neon-cyan: #00fff5;
+  --color-teal: #00bfa6;
+  --color-yellow: #ffeb3b;
+  --color-orange: #ff9800;
+  --color-red: #f44336;
+  --color-green: #4caf50;
+  --color-light-blue: #80d8ff;
+  --color-dark-blue: #0a192f;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --color-button-blue: #112240;
+  --color-button-hover: #1a355c;
+}
+
+/* Backgrounds */
+body {
+  background: radial-gradient(circle at top, #051937, #00264d, #001f3f, #001122);
+  color: var(--color-white);
+  font-family: "Orbitron", "Poppins", sans-serif;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* Title */
+h1.title {
+  text-align: center;
+  font-size: 56px;
+  letter-spacing: 4px;
+  color: var(--color-neon-cyan);
+  text-shadow: 0 0 10px var(--color-teal), 0 0 20px var(--color-neon-cyan);
+}
+
+/* Menu Buttons */
+.menu-button {
+  display: block;
+  width: 300px;
+  margin: 25px auto;
+  padding: 20px;
+  border-radius: 20px;
+  text-align: center;
+  background-color: var(--color-button-blue);
+  color: var(--color-light-blue);
+  font-size: 26px;
+  font-weight: bold;
+  border: 2px solid var(--color-light-blue);
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 0 10px rgba(0, 255, 245, 0.3);
+}
+
+.menu-button:hover {
+  background-color: var(--color-button-hover);
+  color: var(--color-white);
+  box-shadow: 0 0 15px var(--color-neon-cyan), 0 0 30px var(--color-teal);
+  transform: scale(1.05);
+}
+
+/* Stats / UI Panels */
+.stats-box {
+  background: rgba(10, 25, 47, 0.85);
+  border-radius: 15px;
+  border: 2px solid var(--color-neon-cyan);
+  padding: 15px 20px;
+  color: var(--color-white);
+  font-size: 18px;
+  width: 320px;
+  margin: 15px;
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.3);
+}
+
+.stats-box .label {
+  color: var(--color-neon-cyan);
+  font-weight: bold;
+}
+
+/* Settings Screen */
+.settings-container {
+  text-align: center;
+  padding-top: 100px;
+}
+
+.settings-option {
+  display: inline-block;
+  width: 400px;
+  margin: 20px;
+  padding: 20px;
+  border-radius: 15px;
+  background-color: rgba(17, 34, 64, 0.9);
+  color: var(--color-light-blue);
+  font-size: 22px;
+  border: 2px solid var(--color-light-blue);
+  transition: 0.3s;
+}
+
+.settings-option:hover {
+  background-color: var(--color-button-hover);
+  color: var(--color-white);
+  box-shadow: 0 0 15px var(--color-neon-cyan);
+}
+
+/* Pause & Confirm Dialogs */
+.dialog-box {
+  width: 600px;
+  margin: 150px auto;
+  background: rgba(10, 25, 47, 0.95);
+  border: 3px solid var(--color-red);
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  color: var(--color-white);
+  box-shadow: 0 0 25px rgba(255, 0, 0, 0.5);
+}
+
+.dialog-box h2 {
+  color: var(--color-red);
+  text-shadow: 0 0 10px var(--color-red);
+}
+
+.dialog-buttons {
+  margin-top: 25px;
+}
+
+.dialog-buttons button {
+  width: 150px;
+  padding: 12px 0;
+  margin: 0 15px;
+  font-size: 20px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.dialog-buttons .yes {
+  background-color: var(--color-red);
+  color: white;
+}
+
+.dialog-buttons .no {
+  background-color: var(--color-button-blue);
+  color: var(--color-light-blue);
+}
+
+.dialog-buttons button:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 15px var(--color-teal);
+}
+
+/* Footer hint text */
+.hint {
+  color: var(--color-neon-cyan);
+  font-size: 14px;
+  text-align: center;
+  margin-top: 15px;
+  opacity: 0.8;
+}

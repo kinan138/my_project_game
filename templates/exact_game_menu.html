@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🌌 Space Typing Online - Main Menu</title>
+<style>
+body {
+  margin: 0;
+  background: radial-gradient(circle at 20% 30%, #101026, #050515 70%);
+  overflow: hidden;
+  font-family: 'Orbitron', Arial, sans-serif;
+  color: white;
+  user-select: none;
+}
+
+#stars {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.7;
+  animation: twinkle 2s infinite alternate;
+}
+@keyframes twinkle {
+  0% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+.menu-container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.title {
+  font-size: 48px;
+  font-weight: bold;
+  color: #64ffda;
+  text-shadow: 0 0 25px #64ffda;
+  margin-bottom: 40px;
+}
+
+.menu-option {
+  font-size: 28px;
+  padding: 12px 40px;
+  margin: 10px 0;
+  border: 2px solid #64ffda;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.4);
+  width: 280px;
+  text-align: center;
+  transition: 0.25s ease;
+  cursor: pointer;
+}
+.menu-option:hover,
+.menu-option.selected {
+  background: linear-gradient(90deg, rgba(100,255,218,0.2), rgba(0,188,212,0.3));
+  box-shadow: 0 0 15px rgba(100,255,218,0.6);
+  transform: scale(1.05);
+}
+.footer {
+  position: absolute;
+  bottom: 20px;
+  font-size: 14px;
+  color: #9cc;
+}
+</style>
+</head>
+<body>
+  <div id="stars"></div>
+  <div class="menu-container">
+    <div class="title">🚀 Space Typing Online</div>
+
+    <div class="menu-option">Play Offline</div>
+    <div class="menu-option">Play Online</div>
+    <div class="menu-option">Settings</div>
+    <div class="menu-option">About</div>
+
+    <div class="footer">Use ↑ ↓ to navigate • Enter to select • Esc to quit</div>
+  </div>
+
+<script>
+// 🌠 רקע כוכבים
+const stars = document.getElementById('stars');
+for (let i = 0; i < 200; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  s.style.left = Math.random() * 100 + '%';
+  s.style.top = Math.random() * 100 + '%';
+  const size = Math.random() * 2 + 1;
+  s.style.width = size + 'px';
+  s.style.height = size + 'px';
+  s.style.animationDelay = Math.random() * 2 + 's';
+  stars.appendChild(s);
+}
+
+// 🎮 מצב משחק
+const gameState = {
+  menuOptions: ['Play Offline', 'Play Online', 'Settings', 'About'],
+  selectedOption: 0,
+  currentScreen: 'menu'
+};
+
+// 🔊 אפקט "ביפ"
+const beepSound = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_8b720cb81b.mp3?filename=menu-select-89172.mp3");
+beepSound.volume = 0.25;
+
+// הדגשה
+function updateMenuSelection() {
+  document.querySelectorAll('.menu-option').forEach((option, index) => {
+    option.classList.toggle('selected', index === gameState.selectedOption);
+  });
+}
+
+// ניווט במקלדת
+function handleMenuKeys(event) {
+  switch (event.key) {
+    case 'ArrowUp':
+      gameState.selectedOption =
+        (gameState.selectedOption - 1 + gameState.menuOptions.length) %
+        gameState.menuOptions.length;
+      updateMenuSelection();
+      beepSound.currentTime = 0;
+      beepSound.play();
+      break;
+
+    case 'ArrowDown':
+      gameState.selectedOption =
+        (gameState.selectedOption + 1) % gameState.menuOptions.length;
+      updateMenuSelection();
+      beepSound.currentTime = 0;
+      beepSound.play();
+      break;
+
+    case 'Enter':
+      selectMenuOption();
+      break;
+
+    case 'Escape':
+      quitGame();
+      break;
+  }
+}
+
+// הפעלת מאזין למקלדת
+document.addEventListener('keydown', handleMenuKeys);
+
+// פעולה בעת בחירה
+function selectMenuOption() {
+  const selected = gameState.menuOptions[gameState.selectedOption];
+  beepSound.currentTime = 0;
+  beepSound.play();
+  switch (selected) {
+    case 'Play Offline':
+      window.location.href = '/offline';
+      break;
+    case 'Play Online':
+      window.location.href = '/auth';
+      break;
+    case 'Settings':
+      window.location.href = '/settings';
+      break;
+    case 'About':
+      window.location.href = '/about';
+      break;
+  }
+}
+
+// יציאה
+function quitGame() {
+  window.location.href = '/quit';
+}
+
+// עם טעינה — מסמן את הראשון
+window.addEventListener('load', () => {
+  gameState.selectedOption = 0;
+  updateMenuSelection();
+});
+</script>
+</body>
+</html>

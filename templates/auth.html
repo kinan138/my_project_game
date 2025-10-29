@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🚀 Space Typing - Login</title>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  height: 100vh;
+  font-family: 'Orbitron', Arial, sans-serif;
+  background: radial-gradient(circle at 20% 30%, #101026, #050515 70%);
+  overflow: hidden;
+  color: #fff;
+}
+
+/* 🌠 כוכבים רקע */
+.stars {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: twinkle 2s infinite alternate;
+}
+@keyframes twinkle {
+  0% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+/* 🪐 קלף התחברות */
+.card {
+  position: relative;
+  z-index: 2;
+  background: rgba(26,26,58,0.9);
+  border: 2px solid #64ffda;
+  border-radius: 15px;
+  padding: 35px;
+  width: 420px;
+  margin: auto;
+  margin-top: 10vh;
+  text-align: center;
+  box-shadow: 0 0 35px rgba(100,255,218,0.3);
+  animation: float 4s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* כותרת */
+h2 {
+  font-size: 28px;
+  color: #64ffda;
+  margin-bottom: 20px;
+  text-shadow: 0 0 15px #64ffda;
+}
+
+/* טאבים */
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.tab {
+  padding: 10px 22px;
+  border: 1px solid #64ffda;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  color: #64ffda;
+  font-weight: 500;
+  letter-spacing: 1px;
+  transition: 0.3s;
+}
+.tab.active {
+  background: #64ffda;
+  color: #001018;
+  font-weight: bold;
+  box-shadow: 0 0 10px #64ffda;
+}
+.tab:hover {
+  transform: scale(1.05);
+}
+
+/* שדות */
+input {
+  width: 90%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 10px;
+  border: 1px solid #64ffda;
+  background: rgba(0,0,0,0.3);
+  color: white;
+  font-size: 15px;
+  text-align: center;
+}
+input:focus {
+  outline: none;
+  border-color: #00e6b8;
+  box-shadow: 0 0 10px #64ffda;
+}
+
+/* כפתור */
+button {
+  background: linear-gradient(45deg, #64ffda, #00bcd4);
+  border: none;
+  border-radius: 10px;
+  padding: 12px 24px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 95%;
+  transition: all 0.3s ease;
+}
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(100,255,218,0.6);
+}
+
+/* הודעות */
+.error {
+  color: #ff6b6b;
+  font-size: 14px;
+  margin-top: 5px;
+}
+.success {
+  color: #4caf50;
+  font-size: 14px;
+  margin-top: 5px;
+}
+.status {
+  color: #ffa500;
+  font-size: 14px;
+  margin-top: 10px;
+}
+</style>
+</head>
+<body>
+  <!-- רקע כוכבים -->
+  <div class="stars" id="stars"></div>
+
+  <!-- כרטיס התחברות -->
+  <div class="card">
+    <h2>🌌 Space Typing Online</h2>
+    <div class="tabs">
+      <div id="tabSignin" class="tab active" onclick="switchTab('signin')">Sign In</div>
+      <div id="tabSignup" class="tab" onclick="switchTab('signup')">Sign Up</div>
+    </div>
+
+    <!-- Sign In -->
+    <div id="signinForm">
+      <input type="email" id="signinEmail" placeholder="Email" />
+      <input type="password" id="signinPassword" placeholder="Password" />
+      <div id="signinError" class="error"></div>
+      <div id="signinStatus" class="status"></div>
+      <button onclick="signin()">Sign In</button>
+    </div>
+
+    <!-- Sign Up -->
+    <div id="signupForm" style="display:none;">
+      <input type="email" id="signupEmail" placeholder="Email" />
+      <input type="password" id="signupPassword" placeholder="Password" />
+      <input type="password" id="signupConfirm" placeholder="Confirm Password" />
+      <div id="signupError" class="error"></div>
+      <div id="signupSuccess" class="success"></div>
+      <button onclick="signup()">Create Account</button>
+    </div>
+  </div>
+
+<script>
+// 🌟 רקע כוכבים
+const stars = document.getElementById('stars');
+for (let i = 0; i < 200; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  s.style.left = Math.random() * 100 + '%';
+  s.style.top = Math.random() * 100 + '%';
+  const size = Math.random() * 2 + 1;
+  s.style.width = size + 'px';
+  s.style.height = size + 'px';
+  s.style.animationDelay = Math.random() * 2 + 's';
+  stars.appendChild(s);
+}
+
+function switchTab(tab) {
+  const signIn = document.getElementById('signinForm');
+  const signUp = document.getElementById('signupForm');
+  const t1 = document.getElementById('tabSignin');
+  const t2 = document.getElementById('tabSignup');
+  if (tab === 'signin') {
+    signIn.style.display = 'block';
+    signUp.style.display = 'none';
+    t1.classList.add('active');
+    t2.classList.remove('active');
+  } else {
+    signIn.style.display = 'none';
+    signUp.style.display = 'block';
+    t1.classList.remove('active');
+    t2.classList.add('active');
+  }
+}
+
+// אפשרות Enter
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const signInVisible = document.getElementById('signinForm').style.display !== 'none';
+    signInVisible ? signin() : signup();
+  }
+});
+
+async function signin() {
+  const email = document.getElementById('signinEmail').value.trim();
+  const password = document.getElementById('signinPassword').value.trim();
+  const err = document.getElementById('signinError');
+  const status = document.getElementById('signinStatus');
+  err.textContent = '';
+  status.textContent = '';
+
+  if (!email || !password) {
+    err.textContent = 'Please fill in both fields.';
+    return;
+  }
+
+  status.textContent = '🚀 Signing in...';
+  const res = await fetch('/api/signin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: email, password })
+  });
+  const data = await res.json();
+  status.textContent = '';
+
+  if (!res.ok || !data.ok) {
+    err.textContent = data.msg || 'Invalid email or password.';
+  } else {
+    localStorage.setItem('username', email);
+    window.location.href = '/online';
+  }
+}
+
+async function signup() {
+  const email = document.getElementById('signupEmail').value.trim();
+  const pass = document.getElementById('signupPassword').value.trim();
+  const conf = document.getElementById('signupConfirm').value.trim();
+  const err = document.getElementById('signupError');
+  const succ = document.getElementById('signupSuccess');
+  err.textContent = ''; 
+  succ.textContent = '';
+
+  if (!email || !pass || !conf) {
+    err.textContent = 'Please fill in all fields.';
+    return;
+  }
+  if (pass !== conf) {
+    err.textContent = 'Passwords do not match.';
+    return;
+  }
+
+  const res = await fetch('/api/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: email, password: pass })
+  });
+  const data = await res.json();
+  if (!res.ok || !data.ok) {
+    err.textContent = data.msg || 'User already exists.';
+  } else {
+    succ.textContent = '✅ Account created! You can now sign in.';
+    switchTab('signin');
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🚀 Sign In - Space Typing Game</title>
+<style>
+  body {
+    background: linear-gradient(135deg, #0a0a23, #1a1a3a);
+    color: white;
+    font-family: Arial, sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .card {
+    background: rgba(26, 26, 58, 0.9);
+    border: 2px solid #64ffda;
+    border-radius: 15px;
+    padding: 30px;
+    width: 360px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(100, 255, 218, 0.4);
+  }
+  input {
+    width: 90%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: 1px solid #64ffda;
+    background: rgba(0,0,0,0.4);
+    color: white;
+  }
+  button {
+    background: linear-gradient(45deg, #64ffda, #00bcd4);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+  }
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(100, 255, 218, 0.4);
+  }
+  .error {
+    color: #ff6b6b;
+    font-size: 14px;
+    margin-top: 5px;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h2>🚀 Space Typing Game</h2>
+    <p style="color:#64ffda;">Login to start playing online</p>
+    <input type="text" id="username" placeholder="Email / Username" />
+    <input type="password" id="password" placeholder="Password" />
+    <div class="error" id="errorMsg"></div>
+    <button onclick="login()">Sign In</button>
+  </div>
+
+<script>
+async function login() {
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const errorMsg = document.getElementById("errorMsg");
+
+  if (!username || !password) {
+    errorMsg.textContent = "Please enter both fields.";
+    return;
+  }
+
+  const res = await fetch("/api/signin", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok || !data.ok) {
+    errorMsg.textContent = data.msg || "Invalid credentials.";
+    return;
+  }
+
+  // שמור את השם בלוקאל אם תרצה
+  localStorage.setItem("username", data.username);
+  window.location.href = "/online";
+}
+</script>
+</body>
+</html>

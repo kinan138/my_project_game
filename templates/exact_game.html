@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🚀 Space Typing Online</title>
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 50%, #0b0b25 0%, #000010 80%);
+  font-family: 'Arial', sans-serif;
+  color: white;
+}
+#gameCanvas {
+  display: block;
+}
+#hud, #opponentHUD {
+  position: absolute;
+  top: 10px;
+  background: rgba(0,0,0,0.5);
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 16px;
+  border: 1px solid #64ffda;
+}
+#hud {
+  left: 10px;
+  border-color: #64ffda;
+}
+#opponentHUD {
+  right: 10px;
+  border-color: #ff64a0;
+}
+#countdown, #searching {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 100px;
+  text-align: center;
+  color: #64ffda;
+  text-shadow: 0 0 20px #64ffda;
+}
+#searching {
+  font-size: 28px;
+}
+</style>
+</head>
+<body>
+<canvas id="gameCanvas" width="1200" height="800"></canvas>
+<div id="hud"><b>🧑‍🚀 You</b><br>Score: <span id="myScore">0</span><br>Lives: <span id="myLives">3</span></div>
+<div id="opponentHUD"><b>👾 Opponent</b><br>Score: <span id="oppScore">0</span><br>Lives: <span id="oppLives">3</span></div>
+<div id="timer" style="position:absolute;top:10px;left:50%;transform:translateX(-50%);
+background:rgba(0,0,0,0.5);padding:10px 20px;border-radius:10px;
+border:1px solid #64ffda;font-size:16px;">🕒 Time Left: 05:00</div>
+
+<div id="countdown" style="display:none;"></div>
+<div id="searching">🔍 Searching for opponent...</div>
+
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+// === Sounds ===
+const sfxLaser = new Audio("/assets/sounds/InGame/laser_shot.wav");
+const sfxBoom = new Audio("/assets/sounds/InGame/boom.wav");
+const bgMusic = new Audio("/assets/sounds/InGame/space.wav");
+bgMusic.loop = true;
+bgMusic.volume = 0.3;
+
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const countdownEl = document.getElementById("countdown");
+const searchingEl = document.getElementById("searching");
+
+const myScore = document.getElementById("myScore");
+const myLives = document.getElementById("myLives");
+const oppScore = document.getElementById("oppScore");
+const oppLives = document.getElementById("oppLives");
+
+const socket = io({ withCredentials: true });
+
+let words = [];          // [{id,text,x,y, ...}]
+let wordsById = new Map();
+let players = {};
+let gameStarted = false;
+
+// רקע כוכבים
+const stars = Array.from({length: 120}, () => ({
+  x: Math.random()*1200, y: Math.random()*800, s: Math.random()*2 + 0.5
+}));
+
+// ---- Socket events ----
+socket.on("connected", () => {
+  socket.emit("join_game");
+});
+
+socket.on("auth_required", () => {
+  alert("Please sign in first."); 
+  window.location = "/auth";
+});
+
+socket.on("waiting_for_opponent", d => {
+  searchingEl.innerHTML = `🔍 Searching for opponent...<br>Waiting players: ${d.waiting_count}`;
+});
+
+socket.on("game_found", d => {
+  searchingEl.innerHTML = `✅ Game found! Preparing...`;
+  // חשוב! להודיע לשרת שהלקוח מוכן
+  socket.emit("client_ready");
+});
+
+// הספירה שמגיעה מהשרת (3,2,1)
+socket.on("countdown", d => {
+  searchingEl.style.display = "none";
+  countdownEl.style.display = "block";
+  countdownEl.textContent = d.count;
+  if (d.count === 1) setTimeout(() => countdownEl.style.display = "none", 1000);
+});
+
+// השרת מאותת שהמשחק התחיל
+socket.on("game_start", d=>{
+  gameStarted = true;
+  searchingEl.style.display="none";
+  countdownEl.style.display="none";
+  words = [];
+  bgMusic.play(); // 🎵 מפעיל את המוזיקה
+  if (d.duration) startTimer(d.duration);
+});
+
+// === TIMER ===
+const timerEl = document.getElementById("timer");
+let timeLeft = 300;
+let timerInterval = null;
+
+function startTimer(duration) {
+  timeLeft = duration;
+  clearInterval(timerInterval);
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+  const seconds = String(timeLeft % 60).padStart(2, "0");
+  timerEl.textContent = `🕒 Time Left: ${minutes}:${seconds}`;
+}
+
+socket.on("word_update", d => {
+  sfxLaser.currentTime = 0;
+  sfxLaser.play();
+});
+
+socket.on("word_completed", d => {
+  sfxBoom.currentTime = 0;
+  sfxBoom.play();
+});
+
+
+// השרת משדר צילום מצב רציף
+socket.on("update_state", d => {
+  players = d.players || {};
+  // מעדכנים מיקומים/סטטוסים קיימים לפי id
+  if (Array.isArray(d.words)) {
+    for (const w of d.words) {
+      if (!w || !w.id) continue;
+      wordsById.set(w.id, w);
+    }
+    words = Array.from(wordsById.values());
+  }
+});
+
+// ספאון של מילים חדשות (נדאג לא להכניס פעמיים)
+socket.on("word_spawn", d => {
+  if (!d || !Array.isArray(d.words)) return;
+  for (const w of d.words) {
+    if (!w || !w.id) continue;
+    if (!wordsById.has(w.id)) {
+      wordsById.set(w.id, w);
+    }
+  }
+  words = Array.from(wordsById.values());
+});
+
+// הסרת מילה שהושלמה/נפסלה מגיעה דרך עדכון מצב, ובכל מקרה:
+socket.on("word_completed", payload => {
+  const w = payload && payload.word;
+  if (w && w.id) wordsById.delete(w.id);
+  words = Array.from(wordsById.values());
+});
+
+socket.on("word_missed", payload => {
+  const ids = (payload && payload.wordIds) || [];
+  for (const id of ids) wordsById.delete(id);
+  words = Array.from(wordsById.values());
+});
+
+socket.on("game_over", d => {
+  clearInterval(timerInterval);
+  bgMusic.pause();
+  bgMusic.currentTime = 0;
+  const playersArr = Object.values(d.players || {});
+  const me = playersArr[0]; // עכשיו יש רק שחקן אחד ברשימה
+  const winner = d.winner || "Nobody";
+  const winnerScore = d.score || 0;
+  const myScore = me ? (me.my_score || me.score) : 0;
+  const opponentScore = me ? (me.opponent_score || 0) : 0;
+  
+  alert(`⏱️ Time's Up!\n\n🏆 Winner: ${winner}\n💯 Winner Score: ${winnerScore}\n\nYour Score: ${myScore}\nOpponent Score: ${opponentScore}`);
+  window.location = "/";
+});
+
+
+
+// הקלדה
+document.addEventListener("keydown", e => {
+  if (!gameStarted) return;
+  const ch = e.key.toLowerCase();
+  if (ch.length === 1 && ch >= "a" && ch <= "z") {
+    socket.emit("typed_character", { ch });
+  }
+});
+
+// ---- Draw helpers ----
+function drawStars() {
+  ctx.fillStyle = "white";
+  for (const s of stars) {
+    ctx.globalAlpha = Math.min(1, s.s/2);
+    ctx.fillRect(s.x, s.y, s.s, s.s);
+    s.y += s.s*0.35;
+    if (s.y > 800) s.y = 0;
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawWords() {
+  ctx.font = "bold 32px Arial";
+  ctx.textAlign = "center";
+  ctx.lineWidth = 2;
+
+  for (const w of words) {
+    const px = w.x;
+    const py = w.y;
+
+    // קביעת צבע לפי השחקן
+    const playerColor = w.player_color
+      ? `rgb(${w.player_color[0]},${w.player_color[1]},${w.player_color[2]})`
+      : "#64ffda";
+
+    // מילים שהשחקן מקליד עליהן — צבועות חלקית
+    if (w.typed && w.typed.length > 0) {
+      const typedText = w.typed;
+      const remainingText = w.remaining || "";
+
+      // אפקט זוהר לאותיות שהוקלדו
+      ctx.shadowColor = playerColor;
+      ctx.shadowBlur = 15;
+      ctx.fillStyle = playerColor;
+      ctx.fillText(typedText, px - ctx.measureText(remainingText).width / 2, py);
+
+      // המשך המילה בצבע לבן בהיר ללא glow
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = "#e0e0e0";
+      ctx.fillText(remainingText, px + ctx.measureText(typedText).width / 2, py);
+    } else {
+      // מילה שעדיין לא ננגעה — רק טקסט לבן עם זוהר קל
+      ctx.shadowColor = "#64ffda";
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(w.text, px, py);
+      ctx.shadowBlur = 0;
+    }
+  }
+}
+
+
+
+function drawShip() {
+  ctx.fillStyle = "#64ffda";
+  ctx.beginPath();
+  ctx.moveTo(600, 760);
+  ctx.lineTo(580, 790);
+  ctx.lineTo(620, 790);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function updateHUD() {
+  const list = Object.values(players || {});
+  if (list.length === 0) return;
+  
+  // עכשיו יש רק שחקן אחד ברשימה (השחקן הנוכחי)
+  const me = list[0];
+  if (me) { 
+    myScore.textContent = me.my_score || me.score;  
+    myLives.textContent = me.lives; 
+    oppScore.textContent = me.opponent_score || 0; 
+    oppLives.textContent = me.lives; // נניח שהיריב יש לו את אותו מספר חיים
+  }
+}
+
+// ---- Main loop ----
+function loop() {
+  // רקע
+  ctx.fillStyle = "rgba(0,0,20,0.6)";
+  ctx.fillRect(0, 0, 1200, 800);
+  drawStars();
+
+  if (gameStarted) {
+    drawWords();
+    drawShip();
+    updateHUD();
+  }
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+
+</body>
+</html>
